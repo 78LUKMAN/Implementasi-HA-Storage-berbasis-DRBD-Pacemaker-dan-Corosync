@@ -2,7 +2,7 @@
 
 ### **Topologi Jaringan**
 
-![image.png](image.png)
+![image.png](images/image.png)
 
 ### **Konfigurasi Adapter Perangkat**
 
@@ -38,25 +38,25 @@
 
 Langakah awal, kita akan melakukan Clone VM dan menamainya dengan **master.skkkd.lab**. kemudian klik VM **master.skkkd.lab** selanjutnya  masuk ke ***settings*** dan pilih menu ***storage*** dan tambahkan hdd baru untuk replikasi penyimpanan.
 
-![image.png](image%201.png)
+![image.png](images/image%201.png)
 
 Klik **create** dan tentukan ukuranya, misal 2 GB (sesuai kebutuhan) kemudian klik finish.
 
-![image.png](image%202.png)
+![image.png](images/image%202.png)
 
 Klik pada HDD yang sudah dibuat dan kemudian klik **choose**
 
-![image.png](image%203.png)
+![image.png](images/image%203.png)
 
-![image.png](image%204.png)
+![image.png](images/image%204.png)
 
 Langkah selanjutnya adalah menambahkan ethernet baru melalui menu ***network*** sehingga akan terbentuk seperti berikut ini:
 
-![image.png](image%205.png)
+![image.png](images/image%205.png)
 
 Kemudian clone VM **master.skkkd.lab** menjadi **backup.skkkd.lab**, sehingga akan terbentu 2 VM seperti berikut
 
-![image.png](image%206.png)
+![image.png](images/image%206.png)
 
 hidupkan VM **master.skkkd.lab** dan ketikkan perintah ***lsblk*** dan pastikan disk dengan ukuran 2G yang sudah dibuat tadi muncul.
 
@@ -64,19 +64,19 @@ hidupkan VM **master.skkkd.lab** dan ketikkan perintah ***lsblk*** dan pastikan 
 $ lsblk
 ```
 
-![image.png](image%207.png)
+![image.png](images/image%207.png)
 
 Selanjutnya yaitu lakukan konfigurasi hostname pada file ***/etc/hostname*** dan sesuaikan dengan hostname yang tertulis di tabel kebutuhan. Langkah berikutnya adalah melakukan konfigurasi IP untuk ethernet 1 dan ethernet 2 sesuai dengan tabel konfigurasi jaringan.
 
-![image.png](image%208.png)
+![image.png](images/image%208.png)
 
 Selanjutnya ketikan perintah ***sudo netplan apply*** untuk menerapkan konfigurasi IP yang sudah dilakukan, dan pastikan **ethernet 1 (**enp0s3**) dan ethernet 2 (**enp0s8**)** sudah mendapatkan IP dengan mengeceknya menggunakan perintah ***ip a***
 
-![image.png](image%209.png)
+![image.png](images/image%209.png)
 
 Berikutnya adalah  melakukan konfigurasi file host dengan cara  lakukan konfigurasi pada file ***/etc/hosts***
 
-![image.png](image%2010.png)
+![image.png](images/image%2010.png)
 
 Selanjutnya reboot vm **master.skkkd.lab.**
 
@@ -94,7 +94,7 @@ $ sudo apt install drbd-utils pacemaker corosync resource-agents-extra resource-
 
 jika pada saat installasi muncul tampilan postfix config seperti berikut, pilih ***No Configuration***
 
-![image.png](image%2011.png)
+![image.png](images/image%2011.png)
 
 ### Konfigurasi DRBD
 
@@ -123,7 +123,7 @@ resource r0 {
 }
 ```
 
-![image.png](image%2012.png)
+![image.png](images/image%2012.png)
 
 Selanjutnya simpan konfigurasi tersebut. Lakukan konfigurasi yang sama untuk server **backup.skkkd.lab**. Langkah selanjutnya adalah membuat metadata DRBD pada resource **r0**  di server **master.skkkd.lab** dengan mengetikkan perintah berikut,
 
@@ -134,7 +134,7 @@ Selanjutnya simpan konfigurasi tersebut. Lakukan konfigurasi yang sama untuk ser
 $ sudo drbdadm create-md r0
 ```
 
-![image.png](image%2013.png)
+![image.png](images/image%2013.png)
 
 lakukan hal yang sama untuk vm **backup.skkkd.lab.**
 
@@ -151,7 +151,7 @@ untuk memastikan apakah kedua server sudah saling sinkron atau belum, cek status
 $ sudo drbdadm status
 ```
 
-![image.png](image%2014.png)
+![image.png](images/image%2014.png)
 
 Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhubung, tetapi dalam keadaan **tidak konsisten** (*inconsistent state*) yang artinya penyimpanan pada kedua server belum saling sinkron satu sama lain. Supaya data dapat direplikasi dengan benar, kita perlu menempatkan resource ke dalam keadaan **konsisten**. Untuk mengatasi hal ini, ada dua acara yang dapat dilakukan :
 
@@ -173,7 +173,7 @@ Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhub
 > 
 > perintah ini digunakan untuk melihat/memonitoring progress proses sinkronisasi
 > 
-> ![image.png](image%2015.png)
+> ![image.png](images/image%2015.png)
 > 
 > **Melewati sinkronisasi awal (skip initial sync) (solusi 2)**
 > 
@@ -195,7 +195,7 @@ Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhub
 > $ cat /proc/drbd
 > ```
 > 
-> ![image.png](image%2016.png)
+> ![image.png](images/image%2016.png)
 > 
 > Setelah proses sinkronisasi selesai, selanjutnya cek status sinkronisasi pada DRBD dengan menjalankan perintah berikut
 > 
@@ -203,7 +203,7 @@ Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhub
 > $ sudo drbdadm status
 > ```
 > 
-> ![image.png](image%2017.png)
+> ![image.png](images/image%2017.png)
 > 
 > Jika statusnya seperti diatas, artinya kedua server sudah saling sinkron. Namun role pada kedua server masih dalam keadaan ***Secondary,*** yang seharusnya server **master.skkkd.lab** memiliki role ***Primary*** dan **backup.skkkd.lab** memiliki role ***Secondary*.** Setelah kita berhasil menginisialisasi DRBD kita perlu mengubah server **master**.**skkkd.lab** menjadi state **Primary** serta membuat file system pada perangkat DRBD yang sudah kita tentukan diawal tadi (**r0**) dengan cara menjalankan perintah berikut pada server **master.skkkd.lab**
 > 
@@ -211,7 +211,7 @@ Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhub
 > $ sudo drbdadm primary r0
 > ```
 > 
-> ![image.png](image%2018.png)
+> ![image.png](images/image%2018.png)
 > 
 > Selanjutnya, di server **master.skkkd.lab**, format device ***/dev/drbd0*** dengan file sistem *EXT4*, jalankan perintah ini pada server **master.skkkd.lab**. Dengan memformat ***/dev/drbd0*** dengan sistem file **EXT4**, sehingga perangkat DRBD tersebut dapat digunakan untuk menyimpan data seperti partisi biasa, tapi dengan keunggulan replikasi data antar node.
 > 
@@ -219,7 +219,7 @@ Pada output di atas, dapat kita lihat bahwa kedua resource sudah berhasil terhub
 > $ sudo mkfs.ext4 /dev/drbd0
 > ```
 > 
-> ![image.png](image%2019.png)
+> ![image.png](images/image%2019.png)
 > 
 > > Perintah ini akan memformat device ***/dev/drbd0*** dengan sistem file EXT4 sehingga
 > > 
@@ -289,7 +289,7 @@ logging {
 }
 ```
 
-![image.png](image%2020.png)
+![image.png](images/image%2020.png)
 
 > lakukan hal yang sama untuk node lainnya.
 > 
@@ -306,7 +306,7 @@ lihat status cluster dengan menggunakan crm_mon
 $ sudo crm_mon
 ```
 
-![image.png](image%2021.png)
+![image.png](images/image%2021.png)
 
 Karena disini kita hanya menggunakan 2 node, maka kita perlu menseting agar pacemaker mengabaikan quorum. Jalankan perintah ini pada server **master.skkkd.lab**
 
@@ -315,7 +315,7 @@ $ sudo pcs property set no-quorum-policy=ignore
 $ sudo pcs property set stonith-enabled=false
 ```
 
-![image.png](image%2022.png)
+![image.png](images/image%2022.png)
 
 ### Konfigurasi Pacemaker untuk resource DRBD
 
@@ -330,7 +330,7 @@ $ sudo pcs -f drbdconf resource promotable p_drbd_r0 promoted-max=1 promoted-nod
 $ sudo pcs cluster cib-push drbdconf
 ```
 
-![image.png](image%2023.png)
+![image.png](images/image%2023.png)
 
 Sekarang, jika kita menjalankan perintah crm_mon untuk melihat status kluster, kita seharusnya bisa melihat bahwa **Pacemaker sudah mengelola perangkat DRBD kita**.
 
@@ -338,7 +338,7 @@ Sekarang, jika kita menjalankan perintah crm_mon untuk melihat status kluster, k
 $ sudo crm_mon
 ```
 
-![image.png](image%2024.png)
+![image.png](images/image%2024.png)
 
 ### Konfigurasi File System Primtive
 
@@ -352,11 +352,11 @@ $ sudo pcs cluster cib-push drbdconf
 $ sudo crm_mon
 ```
 
-![image.png](image%2025.png)
+![image.png](images/image%2025.png)
 
 Hasilnya akan seperti ini, akan ada reaource baru yaitu ***p_fs_drbd0***
 
-![image.png](image%2026.png)
+![image.png](images/image%2026.png)
 
 ### Konfigurasi Layanan NFS (*NFS Exports*)
 
@@ -380,11 +380,11 @@ $ sudo pcs cluster cib-push drbdconf
 $ sudo crm_mon
 ```
 
-![image.png](image%2027.png)
+![image.png](images/image%2027.png)
 
 Hasilnya akan seperti ini, dimana akan ada resource baru bernama ***p_nfsserver***
 
-![image.png](image%2028.png)
+![image.png](images/image%2028.png)
 
 Dengan server NFS yang sudah berjalan, sekarang kita bisa membuat dan mengatur folder yang akan dibagikan (export), dari node mana pun yang sedang menjalankan resource p_nfsserver di dalam cluster (dalam kasus ini adalah master.skkkd.lab).
 
@@ -397,11 +397,11 @@ $ sudo pcs -f drbdconf constraint colocation add p_exportfs_dir with p_nfsserver
 $ sudo pcs cluster cib-push drbdconf
 ```
 
-![image.png](image%2029.png)
+![image.png](images/image%2029.png)
 
 Maka akan muncul resource baru bernama ***p_exportfs_dir***
 
-![image.png](image%2030.png)
+![image.png](images/image%2030.png)
 
 Sekarang, gunakan perintah showmount **dari sistem klien** untuk melihat direktori yang dibagikan (*exported*) oleh node utama (*Primary*) saat ini (dalam contoh ini adalah **master.skkkd.lab**).
 
@@ -414,7 +414,7 @@ Pastikan client sudah bisa terhubung ke server, uji coba dengan ping ke ip serve
 $ sudo showmount -e 10.10.10.1
 ```
 
-![image.png](image%2031.png)
+![image.png](images/image%2031.png)
 
 ### Konfigurasi IP Virtual
 
@@ -427,11 +427,11 @@ $ sudo pcs -f drbdconf constraint colocation add p_virtip_dir with p_exportfs_di
 $ sudo pcs cluster cib-push drbdconf
 ```
 
-![image.png](image%2032.png)
+![image.png](images/image%2032.png)
 
 Maka hasilnya akan seperti berikut ini, yaitu akan ada resource bernama ***p_virtual_ip_dir***
 
-![image.png](image%2033.png)
+![image.png](images/image%2033.png)
 
 ### Pengujian
 
@@ -447,7 +447,7 @@ Uji koneksi dari client ke IP Virtual dengan melakukan ping terlebih dahulu dari
 $ sudo showmount -e 10.10.10.14
 ```
 
-![image.png](image%2034.png)
+![image.png](images/image%2034.png)
 
 Pertama-tama, kita perlu membuat folder di sisi client. Folder ini nantinya sebagai tempat untuk menampung file system yang akan kita akses dari server. Setelah foldernya siap, baru kita lakukan proses ***mount*** yaitu menyambungkan direktori dari server ke folder lokal tadi. Dengan begitu, isi dari direktori di server bisa langsung diakses dari perangkat client seolah-olah itu bagian dari sistem lokal
 
@@ -456,42 +456,42 @@ $ sudo mkdir /mnt/nfs_mount
 $ sudo mount 10.10.10.14:/mnt/drbdpoint/exports/dir /mnt/nfs_mount
 ```
 
-![image.png](image%2035.png)
+![image.png](images/image%2035.png)
 
 Setelah kita membuat direktori ***mounting point***  dan berhasil melakukan mounting, selanjutnya kita akan melakukan ujicoba dengan membuat file baru di sisi client dengan nama ***client.txt***
 
-![image.png](image%2036.png)
+![image.png](images/image%2036.png)
 
 Kemudian cek apakah file tersebut berhasil masuk ke server node primary, yaitu **master.skkkd.lab**
 
-![image.png](image%2037.png)
+![image.png](images/image%2037.png)
 
 Berikutnya kita akan mencoba dari sisi server dimana kita akan membuat file di sisi server primary.
 
-![image.png](image%2038.png)
+![image.png](images/image%2038.png)
 
 Selanjutnya, periksa di sisi client untuk memastikan bahwa file yang dibuat di sisi server juga muncul di client. Hal ini menunjukkan bahwa client dan server telah tersinkronisasi dengan baik.
 
-![image.png](image%2039.png)
+![image.png](images/image%2039.png)
 
 ### Uji Coba Failover
 
 Setelah berhasil melakukan pengujian sinkronasi file, langkah berikutnya adalah melakukan uji coba failover dengan *reboot / poweroff* server master dengan mengetikan perintah sudo poweroff dan pantau cluster dengan sudo crm_mon di node backup.
 
-![image.png](image%2040.png)
+![image.png](images/image%2040.png)
 
-![image.png](image%2041.png)
+![image.png](images/image%2041.png)
 
 Dapat kita lihat gambar diatas, bahwa ***resource*** berhasil berpindah dari yang semula berada di server **master** (gambar 4. 41) beralih ke server **backup** (gambar 4. 42).  Kemudian ujicoba pada client apakah resource masih bisa diakses atau tidak. Biasanya untuk mengakses isi file membutuhkan waktu karena saat peralihan node akan terjadi downtime beberapa detik.
 
-![image.png](image%2042.png)
+![image.png](images/image%2042.png)
 
 Selanjutnya lakukan pengujian kembali dengan cara edit isi file ***server.txt*** melalui node **backup.skkkd.lab**
 
-![image.png](image%2043.png)
+![image.png](images/image%2043.png)
 
 Kemudian periksa kembali isi file ***server.txt*** dari sisi client, pastikan isinya sesuai / sama dengan apa yang sudah ditulis pada sisi server backup.
 
-![image.png](image%2044.png)
+![image.png](images/image%2044.png)
 
 Selama proses pengujian, bisa ktia perhatikan bahwa file yang ditulis di *node backup* bisa muncul dan diakses tanpa masalah. Itu berarti data berhasil tersinkronisasi dengan baik. Saat dilakukan failover, layanan berpindah dari satu node ke node lainnya, dan disini kita masih bisa membuka data seperti biasa dari sisi *client* tanpa ada error ataupun kehilangan data. Ini menunjukkan bahwa sistem bisa beralih otomatis tanpa memengaruhi akses data. Dari awal sampai akhir, mulai dari konfigurasi replikasi, mount file system, sampai uji coba failover, semua berjalan lancar, maka dapat kita simpulkan konfigurasi dasar sistem high availability storage server ini berhasil dan berjalan seperti yang diharapkan.
